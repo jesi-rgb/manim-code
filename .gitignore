@@ -1,0 +1,12 @@
+*.mp4
+*.mov
+*.DS_Store
+tmp
+temp
+images
+media
+__pycache__
+pickle
+videos
+*.git
+git/
