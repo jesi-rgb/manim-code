@@ -188,3 +188,29 @@ class DepressedCubic(ThreeDScene):
         # fade prisms into their constituting parts
 
         # blow up prisms
+
+
+class _26_DepressedEquations(Scene):
+    def construct(self):
+        a, b, c, d = "2", "- 30", "162", "- 350"
+        original_eq = (
+            Tex(f"{a}x^3 {b}x^2 + {c}x {d} = 0").set_color(BLACK).scale(2).shift(UP * 2)
+        )
+
+        sustitute = R"x - \frac{%s}{3\cdot%s}" % (b, a)
+        eq_sus = Tex(
+            f"2\left({sustitute}\\right)^3",
+            f"- 30\left({sustitute}\\right)^2",
+            f"+ 162\left({sustitute}\\right) - 350 = 0",
+        ).set_color(BLACK)
+
+        depressed_equation = Tex("x^3 + 6x - 20 = 0").set_color(BLACK).scale(2)
+
+        vg_all = VGroup(original_eq, eq_sus, depressed_equation).arrange(DOWN, buff=1.2)
+
+        self.wait(1)
+        for eq in vg_all:
+            self.play(FadeIn(eq))
+            self.wait(3)
+
+        self.wait(2)
