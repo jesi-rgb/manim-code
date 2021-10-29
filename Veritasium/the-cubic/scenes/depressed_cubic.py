@@ -1,4 +1,5 @@
 from functools import update_wrapper
+from math import exp
 from typing import final
 from manimlib import *
 from numpy import cbrt, sqrt
@@ -397,23 +398,26 @@ class _26_DepressedEquationsBreakdown(Scene):
             R"-bx^2",
             R"+\frac{7b^2x}{9}",
             R"-\frac{b^3}{27a}",
-            R"+",
-            "bx^2",
+            R"+ bx^2",
             R"-\frac{2b^2x}{3a}",
             R"+\frac{b^3}{9a^2}",
             "\dots",
             "=0",
         ).set_color(BLACK)
 
-        final_eq = Tex(
-            R"ax^3",
-            R"+\left(c - \frac{b^2}{3a}\right)x",
-            "+",
-            R"\left(",
-            R"d +\frac{2b^3}{27a^2} -\frac{bc}{3a}",
-            R"\right)",
-            R"=0",
-        ).set_color(BLACK)
+        final_eq = (
+            Tex(
+                R"ax^3",
+                R"+\left(c - \frac{b^2}{3a}\right)x",
+                "+",
+                R"\left(",
+                R"d +\frac{2b^3}{27a^2} -\frac{bc}{3a}",
+                R"\right)",
+                R"=0",
+            )
+            .set_color(BLACK)
+            .scale(1.2)
+        )
 
         self.play(FadeIn(original_eq))
 
@@ -422,8 +426,9 @@ class _26_DepressedEquationsBreakdown(Scene):
             run_time=4,
         )
 
-        self.play(eq_sus.animate.shift(UP * 2))
+        self.play(eq_sus.animate.shift(UP * 2.5))
 
+        # step 1 expand
         self.play(FadeIn(expand_1.next_to(eq_sus, DOWN, buff=1)))
 
         brace_ax3 = Brace(expand_1[:6], direction=DOWN).set_color(BLACK)
@@ -454,6 +459,7 @@ class _26_DepressedEquationsBreakdown(Scene):
 
         self.play(LaggedStartMap(Write, VGroup(*[rect_1, rect_3, rect_7])))
 
+        # step 2 compress
         self.play(FadeIn(compress_1.next_to(expand_1, DOWN, buff=1)))
 
         brace_ax3 = Brace(compress_1[:4], direction=DOWN).set_color(BLACK)
@@ -477,3 +483,45 @@ class _26_DepressedEquationsBreakdown(Scene):
         self.play(FadeIn(brace_label_bx2), run_time=2)
 
         self.play(FadeOut(brace_label_ax3), FadeOut(brace_label_bx2))
+
+        rect_1_c = SurroundingRectangle(compress_1[1], buff=0.1).set_color(RED_C)
+        rect_5_c = SurroundingRectangle(compress_1[4], buff=0.1).set_color(RED_C)
+
+        arrow_1 = Arrow(expand_1[1], compress_1[1]).set_color(RED_C)
+        arrow_3 = Arrow(expand_1[3], compress_1[1]).set_color(RED_C)
+        arrow_7 = Arrow(expand_1[7], compress_1[4]).set_color(RED_C)
+
+        self.play(
+            LaggedStartMap(
+                Write, VGroup(*[rect_1_c, rect_5_c, arrow_1, arrow_3, arrow_7])
+            )
+        )
+
+        self.wait(5)
+
+        self.play(
+            FadeOut(compress_1[1], DOWN),
+            FadeOut(compress_1[4], DOWN),
+            FadeOut(rect_1_c, DOWN),
+            FadeOut(rect_5_c, DOWN),
+            run_time=2,
+        )
+
+        self.wait(2)
+
+        # final step show the things
+        self.play(
+            FadeOut(expand_1),
+            FadeOut(compress_1),
+            FadeOut(rect_1_c),
+            FadeOut(rect_5_c),
+            FadeOut(arrow_1),
+            FadeOut(arrow_3),
+            FadeOut(arrow_7),
+            FadeOut(rect_1),
+            FadeOut(rect_3),
+            FadeOut(rect_7),
+        )
+
+        self.play(eq_sus.animate.shift(DOWN * 1.5))
+        self.play(FadeIn(final_eq.next_to(original_eq, DOWN, buff=0.2)))
