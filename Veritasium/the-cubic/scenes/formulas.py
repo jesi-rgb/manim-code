@@ -5,6 +5,69 @@ from typing_extensions import runtime
 from manimlib import *
 import numpy as np
 from numpy import sqrt
+import colorsys
+from itertools import product
+
+
+def xor(tup_a, tup_b):
+    return tuple(a ^ b for a, b in zip(tup_a, tup_b))
+
+
+def scale_lightness(rgb, scale_l):
+
+    if isinstance(rgb, str):
+        rgb = hex_to_rgb(rgb)
+    # convert rgb to hls
+    h, l, s = colorsys.rgb_to_hls(*rgb)
+    # manipulate h, l, s values and return as rgb
+    return rgb_to_hex(colorsys.hls_to_rgb(h, min(1, l * scale_l), s=s))
+
+
+class JPrism(Group):
+    def __init__(self, dimensions=[1, 2, 3], fill_color=BLUE, stroke_color=BLACK):
+        self.prism = Prism(dimensions=dimensions).set_color(fill_color)
+
+        vertices = list(product([0, 1], repeat=3))
+
+        edges = []
+
+        for v1 in vertices:
+            for v2 in vertices:
+                if v1 != v2 and sum(xor(v1, v2)) < 2:
+
+                    l = (
+                        Line3D(
+                            start=self.prism.get_corner(np.array(v1)),
+                            end=self.prism.get_corner(np.array(v2)),
+                            width=0.002,
+                            gloss=-1,
+                        )
+                        .set_color(
+                            scale_lightness(fill_color, 0.3)
+                            if stroke_color is None
+                            else stroke_color
+                        )
+                        .set_gloss(-1, recurse=True)
+                    )
+
+                    edges.append(l)
+
+        self.edges = Group(*edges)
+        for dim, value in enumerate(self.prism.dimensions):
+            self.edges.rescale_to_fit(value + 0.0050, dim, stretch=True)
+
+        self.edges.move_to(self.prism.get_center())
+
+        super().__init__(self.prism, *self.edges)
+
+
+class JCube(JPrism):
+    def __init__(self, side_length=2, fill_color=BLUE, stroke_color=BLACK):
+        super().__init__(
+            dimensions=[side_length, side_length, side_length],
+            fill_color=fill_color,
+            stroke_color=stroke_color,
+        )
 
 
 class TransformMatchingPartsJ(AnimationGroup):
@@ -173,24 +236,84 @@ class _17_IntroToCubic(Scene):
 
 class _19_NumbersAndBlocks(Scene):
     def construct(self):
-        original_equation = (
-            Tex(R"z^3", "= 26 +", "y^3").set_color(BLACK).scale(3).shift(UP * 1.5)
+
+        x = 2
+        y = 1
+        z = x + y
+        general_opacity = 1
+        x_cube = JCube(side_length=x, fill_color=PURPLE).shift(ORIGIN)
+        y_cube = JCube(side_length=y, fill_color=YELLOW_D).next_to(
+            x_cube, DOWN + OUT + LEFT, buff=0
         )
-        cube = (
-            Cube(side_length=2)
-            .set_color(RED_C)
-            .rotate(-PI / 5, Y_AXIS)
-            .rotate(PI / 9, X_AXIS)
+
+        z_cube_og = (
+            JCube(side_length=z, fill_color=RED_C)
+            .next_to(x_cube, buff=0, aligned_edge=IN + UP + LEFT, coor_mask=[0, 1, 1])
+            .shift(LEFT * y / 2)
+            .shift(IN * 0.02)  # to avoid glitches
+        )
+
+        # x, y, y prisms
+        ####################################################
+        x_y_y = (
+            JPrism(dimensions=[x, y, y], fill_color=GREEN).next_to(
+                x_cube, OUT + DOWN, buff=0
+            )
+        ).set_opacity(general_opacity)
+
+        x_y_y_1 = (
+            (JPrism(dimensions=[x, y, y], fill_color=GREEN))
+            .rotate(PI / 2, Z_AXIS)
+            .next_to(x_cube, OUT + LEFT, buff=0)
+        ).set_opacity(general_opacity)
+
+        x_y_y_2 = (
+            JPrism(dimensions=[y, y, x], fill_color=GREEN)
+            .rotate(0)
+            .next_to(x_cube, LEFT + DOWN, buff=0)
+        ).set_opacity(general_opacity)
+
+        # x, x, y prisms
+        ####################################################
+        x_x_y = (
+            JPrism(dimensions=[x, x, y], fill_color=BLUE_D)
+            .next_to(x_cube, OUT, buff=0)
+            .set_opacity(general_opacity)
+        )
+        x_x_y_1 = (
+            JPrism(dimensions=[x, x, y], fill_color=BLUE_D)
+            .rotate(PI / 2, Y_AXIS)
+            .next_to(x_cube, LEFT, buff=0)
+        ).set_opacity(general_opacity)
+
+        x_x_y_2 = (
+            JPrism(dimensions=[x, x, y], fill_color=BLUE_D)
+            .rotate(PI / 2, X_AXIS)
+            .next_to(x_cube, DOWN, buff=0)
+        ).set_opacity(general_opacity)
+
+        # ORIGINAL EQUATION
+        original_equation = (
+            Tex(R"z^3", "= 26 +", "y^3").set_color(BLACK).scale(3).shift(UP * 2.3)
+        )
+
+        full_cube = (
+            Group(
+                x_cube, y_cube.copy(), x_x_y, x_x_y_1, x_x_y_2, x_y_y, x_y_y_1, x_y_y_2
+            )
+            .rotate(PI / 4, Z_AXIS)
+            .rotate(-PI / 3, X_AXIS)
+            .scale(0.8)
             .next_to(original_equation[0], DOWN, buff=1)
         )
 
-        blob = (
-            Cube(side_length=1)
+        y_cube_eq = (
+            y_cube.copy()
             .set_color(YELLOW_D)
             .rotate(-PI / 5, Y_AXIS)
             .rotate(PI / 9, X_AXIS)
+            .scale(0.8)
             .next_to(original_equation[-1], DOWN, buff=1.5)
-            # .shift(UP * 0.5)
         )
 
         self.wait(1)
@@ -199,11 +322,11 @@ class _19_NumbersAndBlocks(Scene):
 
         self.wait(2)
 
-        self.play(FadeIn(cube), run_time=2)
+        self.play(FadeIn(full_cube), run_time=2)
 
         self.wait(2)
 
-        self.play(FadeIn(blob), run_time=2)
+        self.play(FadeIn(y_cube_eq), run_time=2)
 
         self.wait(2)
 
