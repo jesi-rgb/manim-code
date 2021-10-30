@@ -355,24 +355,28 @@ class _26_DepressedEquationsBreakdown(Scene):
         original_eq = (
             Tex(f"ax^3 +bx^2 + cx + d", "= 0", isolate=["x", "a", "b", "c", "d", "+"])
             .set_color(BLACK)
-            .scale(2)
+            .scale(1.2)
         )
 
         sustitute = R"x - \frac{b}{3a}"
-        eq_sus = Tex(
-            f"a",
-            f"\left({sustitute}\\right)^3",
-            f"+",
-            "b",
-            f"\left({sustitute}\\right)^2",
-            f"+",
-            "c",
-            f"\left({sustitute}\\right)",
-            "+",
-            "d",
-            "= 0",
-            # isolate=["a", "b", "c", "d"],
-        ).set_color(BLACK)
+        eq_sus = (
+            Tex(
+                f"a",
+                f"\left({sustitute}\\right)^3",
+                f"+",
+                "b",
+                f"\left({sustitute}\\right)^2",
+                f"+",
+                "c",
+                f"\left({sustitute}\\right)",
+                "+",
+                "d",
+                "= 0",
+                # isolate=["a", "b", "c", "d"],
+            )
+            .set_color(BLACK)
+            .scale(1.2)
+        )
 
         expand_1 = (
             Tex(
@@ -390,7 +394,7 @@ class _26_DepressedEquationsBreakdown(Scene):
                 "=0",
             )
             .set_color(BLACK)
-            .scale(0.8)
+            .scale(0.9)
         )
 
         compress_1 = Tex(
@@ -419,14 +423,16 @@ class _26_DepressedEquationsBreakdown(Scene):
             .scale(1.2)
         )
 
-        self.play(FadeIn(original_eq))
+        self.play(FadeIn(original_eq), run_time=2)
+
+        self.wait(3)
 
         self.play(
             TransformMatchingTexJ(original_eq, eq_sus, fade_direction=ORIGIN),
-            run_time=4,
+            run_time=3,
         )
 
-        self.play(eq_sus.animate.shift(UP * 2.5))
+        self.play(eq_sus.animate.shift(UP * 2.5), run_time=2)
 
         # step 1 expand
         self.play(FadeIn(expand_1.next_to(eq_sus, DOWN, buff=1)))
@@ -435,54 +441,46 @@ class _26_DepressedEquationsBreakdown(Scene):
         annotation_ax3 = (
             Tex(f"a\left({sustitute}\\right)^3")
             .set_color(BLACK)
-            .scale(0.7)
+            .scale(0.5)
             .next_to(brace_ax3, DOWN)
         )
         brace_label_ax3 = VGroup(brace_ax3, annotation_ax3)
-        self.play(FadeIn(brace_label_ax3), run_time=2)
 
         brace_bx2 = Brace(expand_1[7:-2], direction=DOWN).set_color(BLACK)
         annotation_bx2 = (
             Tex(f"b\left({sustitute}\\right)^2")
             .set_color(BLACK)
-            .scale(0.7)
+            .scale(0.5)
             .next_to(brace_bx2, DOWN)
         )
         brace_label_bx2 = VGroup(brace_bx2, annotation_bx2)
-        self.play(FadeIn(brace_label_bx2), run_time=2)
 
-        self.play(FadeOut(brace_label_ax3), FadeOut(brace_label_bx2))
+        self.play(FadeIn(brace_label_ax3), FadeIn(brace_label_bx2), run_time=2)
+        self.wait(1)
+        self.play(FadeOut(brace_label_ax3), FadeOut(brace_label_bx2), run_time=2)
 
         rect_1 = SurroundingRectangle(expand_1[1], buff=0.1).set_color(RED_C)
         rect_3 = SurroundingRectangle(expand_1[3], buff=0.1).set_color(RED_C)
         rect_7 = SurroundingRectangle(expand_1[7], buff=0.1).set_color(RED_C)
 
-        self.play(LaggedStartMap(Write, VGroup(*[rect_1, rect_3, rect_7])))
+        self.play(LaggedStartMap(Write, VGroup(*[rect_1, rect_3, rect_7])), run_time=2)
+        self.wait(4)
 
         # step 2 compress
-        self.play(FadeIn(compress_1.next_to(expand_1, DOWN, buff=1)))
+        self.play(FadeIn(compress_1.next_to(expand_1, DOWN, buff=1)), run_time=2)
 
-        brace_ax3 = Brace(compress_1[:4], direction=DOWN).set_color(BLACK)
-        annotation_ax3 = (
-            Tex(f"a\left({sustitute}\\right)^3")
-            .set_color(BLACK)
-            .scale(0.7)
-            .next_to(brace_ax3, DOWN)
+        brace_ax3_c = Brace(compress_1[:4], direction=DOWN).set_color(BLACK)
+        brace_label_ax3 = VGroup(
+            brace_ax3_c, annotation_ax3.copy().next_to(brace_ax3_c, DOWN)
         )
-        brace_label_ax3 = VGroup(brace_ax3, annotation_ax3)
-        self.play(FadeIn(brace_label_ax3), run_time=2)
-
-        brace_bx2 = Brace(compress_1[5:-2], direction=DOWN).set_color(BLACK)
-        annotation_bx2 = (
-            Tex(f"b\left({sustitute}\\right)^2")
-            .set_color(BLACK)
-            .scale(0.7)
-            .next_to(brace_bx2, DOWN)
+        brace_bx2_c = Brace(compress_1[4:-2], direction=DOWN).set_color(BLACK)
+        brace_label_bx2 = VGroup(
+            brace_bx2_c, annotation_bx2.copy().next_to(brace_bx2_c, DOWN)
         )
-        brace_label_bx2 = VGroup(brace_bx2, annotation_bx2)
-        self.play(FadeIn(brace_label_bx2), run_time=2)
 
-        self.play(FadeOut(brace_label_ax3), FadeOut(brace_label_bx2))
+        self.play(FadeIn(brace_label_ax3), FadeIn(brace_label_bx2), run_time=2)
+        self.wait(2)
+        self.play(FadeOut(brace_label_ax3), FadeOut(brace_label_bx2), run_time=2)
 
         rect_1_c = SurroundingRectangle(compress_1[1], buff=0.1).set_color(RED_C)
         rect_5_c = SurroundingRectangle(compress_1[4], buff=0.1).set_color(RED_C)
@@ -492,9 +490,12 @@ class _26_DepressedEquationsBreakdown(Scene):
         arrow_7 = Arrow(expand_1[7], compress_1[4]).set_color(RED_C)
 
         self.play(
-            LaggedStartMap(
-                Write, VGroup(*[rect_1_c, rect_5_c, arrow_1, arrow_3, arrow_7])
-            )
+            Write(rect_1_c),
+            Write(rect_5_c),
+            ShowCreationThenDestruction(arrow_1),
+            ShowCreationThenDestruction(arrow_3),
+            ShowCreationThenDestruction(arrow_7),
+            run_time=3,
         )
 
         self.wait(5)
@@ -512,16 +513,15 @@ class _26_DepressedEquationsBreakdown(Scene):
         # final step show the things
         self.play(
             FadeOut(expand_1),
-            FadeOut(compress_1),
-            FadeOut(rect_1_c),
-            FadeOut(rect_5_c),
-            FadeOut(arrow_1),
-            FadeOut(arrow_3),
-            FadeOut(arrow_7),
+            FadeOut(compress_1[0]),
+            FadeOut(compress_1[2]),
+            FadeOut(compress_1[3]),
+            FadeOut(compress_1[5:]),
             FadeOut(rect_1),
             FadeOut(rect_3),
             FadeOut(rect_7),
+            run_time=2,
         )
 
-        self.play(eq_sus.animate.shift(DOWN * 1.5))
-        self.play(FadeIn(final_eq.next_to(original_eq, DOWN, buff=0.2)))
+        self.play(eq_sus.animate.shift(DOWN * 1.5), run_time=2)
+        self.play(FadeIn(final_eq.next_to(original_eq, DOWN, buff=0.2)), run_time=2)
