@@ -3,9 +3,26 @@ from math import exp
 from typing import final
 from manimlib import *
 from numpy import cbrt, sqrt
+from typing import Optional
 
 # x^3 = 15x + 4
 # x^3 = cx + d
+class Cross(VGroup):
+    def __init__(
+        self,
+        mobject: Optional["Mobject"] = None,
+        stroke_color: Color = RED,
+        stroke_width: float = 6,
+        scale_factor: float = 1,
+        **kwargs,
+    ):
+        super().__init__(
+            Line(UP + LEFT, DOWN + RIGHT), Line(UP + RIGHT, DOWN + LEFT), **kwargs
+        )
+        if mobject is not None:
+            self.replace(mobject, stretch=True)
+        self.scale(scale_factor)
+        self.set_stroke(color=stroke_color, width=stroke_width)
 
 
 class TransformMatchingPartsJ(AnimationGroup):
@@ -386,8 +403,7 @@ class _26_DepressedEquationsBreakdown(Scene):
                 R"-\frac{bx^2}{3}",  # to indicate 3
                 R"+\frac{2b^2x}{3}",
                 R"-\frac{b^3}{27a}",
-                R"+",
-                R"bx^2",  # to indicate 7
+                R"+bx^2",  # to indicate 7
                 R"-\frac{2b^2x}{3a}",
                 R"+\frac{b^3}{9a^2}",
                 "\dots",
@@ -437,91 +453,23 @@ class _26_DepressedEquationsBreakdown(Scene):
         # step 1 expand
         self.play(FadeIn(expand_1.next_to(eq_sus, DOWN, buff=1)))
 
-        brace_ax3 = Brace(expand_1[:6], direction=DOWN).set_color(BLACK)
-        annotation_ax3 = (
-            Tex(f"a\left({sustitute}\\right)^3")
-            .set_color(BLACK)
-            .scale(0.5)
-            .next_to(brace_ax3, DOWN)
-        )
-        brace_label_ax3 = VGroup(brace_ax3, annotation_ax3)
-
-        brace_bx2 = Brace(expand_1[7:-2], direction=DOWN).set_color(BLACK)
-        annotation_bx2 = (
-            Tex(f"b\left({sustitute}\\right)^2")
-            .set_color(BLACK)
-            .scale(0.5)
-            .next_to(brace_bx2, DOWN)
-        )
-        brace_label_bx2 = VGroup(brace_bx2, annotation_bx2)
-
-        self.play(FadeIn(brace_label_ax3), FadeIn(brace_label_bx2), run_time=2)
-        self.wait(1)
-        self.play(FadeOut(brace_label_ax3), FadeOut(brace_label_bx2), run_time=2)
-
         rect_1 = SurroundingRectangle(expand_1[1], buff=0.1).set_color(RED_C)
         rect_3 = SurroundingRectangle(expand_1[3], buff=0.1).set_color(RED_C)
-        rect_7 = SurroundingRectangle(expand_1[7], buff=0.1).set_color(RED_C)
-
-        self.play(LaggedStartMap(Write, VGroup(*[rect_1, rect_3, rect_7])), run_time=2)
-        self.wait(4)
-
-        # step 2 compress
-        self.play(FadeIn(compress_1.next_to(expand_1, DOWN, buff=1)), run_time=2)
-
-        brace_ax3_c = Brace(compress_1[:4], direction=DOWN).set_color(BLACK)
-        brace_label_ax3 = VGroup(
-            brace_ax3_c, annotation_ax3.copy().next_to(brace_ax3_c, DOWN)
-        )
-        brace_bx2_c = Brace(compress_1[4:-2], direction=DOWN).set_color(BLACK)
-        brace_label_bx2 = VGroup(
-            brace_bx2_c, annotation_bx2.copy().next_to(brace_bx2_c, DOWN)
-        )
-
-        self.play(FadeIn(brace_label_ax3), FadeIn(brace_label_bx2), run_time=2)
-        self.wait(2)
-        self.play(FadeOut(brace_label_ax3), FadeOut(brace_label_bx2), run_time=2)
-
-        rect_1_c = SurroundingRectangle(compress_1[1], buff=0.1).set_color(RED_C)
-        rect_5_c = SurroundingRectangle(compress_1[4], buff=0.1).set_color(RED_C)
-
-        arrow_1 = Arrow(expand_1[1], compress_1[1]).set_color(RED_C)
-        arrow_3 = Arrow(expand_1[3], compress_1[1]).set_color(RED_C)
-        arrow_7 = Arrow(expand_1[7], compress_1[4]).set_color(RED_C)
+        rect_7 = SurroundingRectangle(expand_1[6], buff=0.1).set_color(RED_C)
 
         self.play(
-            Write(rect_1_c),
-            Write(rect_5_c),
-            ShowCreationThenDestruction(arrow_1),
-            ShowCreationThenDestruction(arrow_3),
-            ShowCreationThenDestruction(arrow_7),
-            run_time=3,
-        )
-
-        self.wait(5)
-
-        self.play(
-            FadeOut(compress_1[1], DOWN),
-            FadeOut(compress_1[4], DOWN),
-            FadeOut(rect_1_c, DOWN),
-            FadeOut(rect_5_c, DOWN),
+            ShowCreationThenDestruction(rect_1),
+            ShowCreationThenDestruction(rect_3),
+            ShowCreationThenDestruction(rect_7),
             run_time=2,
         )
+        self.wait(1)
 
-        self.wait(2)
+        cross_1 = Cross(expand_1[1]).set_color(RED_C)
+        cross_3 = Cross(expand_1[3]).set_color(RED_C)
+        cross_7 = Cross(expand_1[6]).set_color(RED_C)
 
-        # final step show the things
-        self.play(
-            FadeOut(expand_1),
-            FadeOut(compress_1[0]),
-            FadeOut(compress_1[2]),
-            FadeOut(compress_1[3]),
-            FadeOut(compress_1[5:]),
-            FadeOut(rect_1),
-            FadeOut(rect_3),
-            FadeOut(rect_7),
-            run_time=2,
-        )
+        self.play(Write(cross_1), Write(cross_3), Write(cross_7))
 
-        self.play(eq_sus.animate.shift(DOWN * 1.5), run_time=2)
-        self.play(FadeIn(final_eq.next_to(original_eq, DOWN, buff=0.2)), run_time=2)
+        self.wait(3)
+        self.play(FadeIn(final_eq.next_to(expand_1, DOWN, buff=1)), run_time=2)
