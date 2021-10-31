@@ -458,9 +458,9 @@ class _26_DepressedEquationsBreakdown(Scene):
         rect_7 = SurroundingRectangle(expand_1[6], buff=0.1).set_color(RED_C)
 
         self.play(
-            ShowCreationThenDestruction(rect_1),
-            ShowCreationThenDestruction(rect_3),
-            ShowCreationThenDestruction(rect_7),
+            Write(rect_1),
+            Write(rect_3),
+            Write(rect_7),
             run_time=2,
         )
         self.wait(1)
